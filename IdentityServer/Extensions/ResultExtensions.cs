@@ -1,5 +1,5 @@
-﻿using App.Core.Domain.Result;
-using App.Core.Enums;
+﻿using App.Core.Enums;
+using App.Core.Result;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IdenitityServer.Extensions

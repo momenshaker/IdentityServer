@@ -1,22 +1,16 @@
-﻿namespace App.Core.Options
+﻿using App.Core.Enums;
+
+namespace App.Core.Options;
+
+public class OpenIdServerOptions
 {
-    public class OpenIdServerOptions
+    public class CertificateOptions
     {
-        public class CertificateOptions
-        {
-            public CertificateStoreType? StoreType { get; set; }
-            public string CertificateName { get; set; }
-            public string StoreName { get; set; }
-        }
-
-        public CertificateOptions EncryptionCertificate { get; set; }
-        public CertificateOptions SigningCertificate { get; set; }
+        public CertificateStoreType? StoreType { get; set; }
+        public string CertificateName { get; set; } = string.Empty;
+        public string StoreName { get; set; } = string.Empty;
     }
 
-    public enum CertificateStoreType
-    {
-        File,
-        KeyVault
-    }
- 
+    public CertificateOptions EncryptionCertificate { get; set; } = new CertificateOptions();
+    public CertificateOptions SigningCertificate { get; set; } = new CertificateOptions();
 }

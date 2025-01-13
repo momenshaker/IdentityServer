@@ -1,5 +1,5 @@
 ﻿using App.Contract.Dto;
-using App.Core.Domain.Result;
+using App.Core.Result;
 
 public interface IAccountService
 {

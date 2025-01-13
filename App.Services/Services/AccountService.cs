@@ -1,7 +1,7 @@
 ﻿using App.Contract.Dto;
 using App.Core.Context;
-using App.Core.Data.Models;
-using App.Core.Domain.Result;
+using App.Core.Entites;
+using App.Core.Result;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -172,7 +172,7 @@ namespace App.Services.Services
         /// </summary>
         public async Task<Result<UserProfile>> GetProfileAsync(string userId)
         {
-            var result = new Result<UserProfile>(null);
+            var result = new Result<UserProfile>(new UserProfile());
 
             try
             {
@@ -209,7 +209,7 @@ namespace App.Services.Services
                 // Validate roles if provided.
                 if (model.Roles != null)
                 {
-                    var roles = await _applicationDbContext.Roles.Where(x => model.Roles.Contains(x.Name)).ToListAsync();
+                    var roles = await _applicationDbContext.Roles.Where(x => model.Roles.Contains(x.Name!)).ToListAsync();
                     if (roles.Count() != model.Roles.Count())
                     {
                         result.StatusCode = Core.Enums.StatusCode.AlreadyExist;
@@ -309,7 +309,7 @@ namespace App.Services.Services
                 }
 
                 var validRoles = await _applicationDbContext.Roles
-                    .Where(r => roles.Contains(r.Name))
+                    .Where(r => roles.Contains(r.Name!))
                     .Select(r => r.Name)
                     .ToListAsync();
 
@@ -320,7 +320,7 @@ namespace App.Services.Services
                     return result;
                 }
 
-                var addRolesResult = await _userManager.AddToRolesAsync(user, validRoles);
+                var addRolesResult = await _userManager.AddToRolesAsync(user, validRoles!);
                 if (!addRolesResult.Succeeded)
                 {
                     result.StatusCode = Core.Enums.StatusCode.BadRequest;
@@ -355,7 +355,7 @@ namespace App.Services.Services
                     .Select(r => r.Name)
                     .ToListAsync();
 
-                result.Data = roles;
+                result.Data = roles!;
                 result.StatusCode = Core.Enums.StatusCode.Success;
                 return result;
             }

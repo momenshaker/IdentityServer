@@ -1,5 +1,5 @@
 ﻿using App.Contract.Dto;
-using App.Core.Data.Models;
+using App.Core.Entites;
 using AutoMapper;
 
 namespace App.Services.Helpers

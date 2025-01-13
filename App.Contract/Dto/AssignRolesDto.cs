@@ -1,8 +1,7 @@
-﻿namespace App.Contract.Dto
+﻿namespace App.Contract.Dto;
+
+public class AssignRolesDto
 {
-    public class AssignRolesDto
-    {
-        public string userId { get; set; }
-        public List<string> roles{ get; set; }
-    }
+    public string userId { get; set; } = string.Empty;
+    public List<string> roles{ get; set; } = new List<string>();
 }

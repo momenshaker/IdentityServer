@@ -1,5 +1,5 @@
 ﻿using App.Contract.Dto;
-using App.Core.Domain.Result;
+using App.Core.Result;
 using App.Services.Services;
 using IdenitityServer.Extensions;
 using Microsoft.AspNetCore.Authorization;
@@ -71,8 +71,13 @@ namespace IdenitityServer.Controllers
         [Authorize]
         public async Task<IActionResult> GetUserProfile()
         {
-            var userResult = await _accountService.GetProfileAsync(User.Claims.FirstOrDefault()?.Value);
-            return userResult.ConvertToActionResult(this);
+            if (User?.Claims?.FirstOrDefault() is not null)
+            {
+                var userResult = await _accountService.GetProfileAsync(User?.Claims?.FirstOrDefault()?.Value!);
+                return userResult.ConvertToActionResult(this);
+            }
+            var result = CreateBadRequestResult();
+            return result.ConvertToActionResult(this);
         }
 
         [HttpPost]

@@ -1,5 +1,5 @@
 ﻿using App.Core.Context;
-using App.Core.Data.Models;
+using App.Core.Entites;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
@@ -45,7 +45,7 @@ namespace IdentityServer.Controllers
             var request = HttpContext.GetOpenIddictServerRequest();
 
             // OTP Code Grant Type
-            if (request.GrantType == "otp_code")
+            if (request!.GrantType == "otp_code")
             {
                 return await HandleOtpCodeGrantType(request);
             }
@@ -77,13 +77,13 @@ namespace IdentityServer.Controllers
         /// </summary>
         private async Task<IActionResult> HandleOtpCodeGrantType(OpenIddictRequest request)
         {
-            var user = await _userManager.FindByEmailAsync(request.Username);
-            var application = await _applicationManager.FindByClientIdAsync(request.ClientId)
+            var user = await _userManager.FindByEmailAsync(request?.Username!);
+            _ = await _applicationManager.FindByClientIdAsync(request?.ClientId!)
                              ?? throw new InvalidOperationException("The application cannot be found.");
 
-            if (await _userManager.VerifyTwoFactorTokenAsync(user, TokenOptions.DefaultPhoneProvider, request.Code))
+            if (await _userManager.VerifyTwoFactorTokenAsync(user!, TokenOptions.DefaultPhoneProvider, request?.Code!))
             {
-                var identity = await CreateClaimsIdentity(user);
+                var identity = await CreateClaimsIdentity(user!);
                 return SignIn(new ClaimsPrincipal(identity), OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
             }
 
@@ -95,13 +95,13 @@ namespace IdentityServer.Controllers
         /// </summary>
         private async Task<IActionResult> HandlePasswordGrantType(OpenIddictRequest request)
         {
-            var user = await _userManager.FindByNameAsync(request.Username);
+            var user = await _userManager.FindByNameAsync(request?.Username!);
             if (user == null)
             {
                 return ForbidWithError(Errors.InvalidGrant, "The username/password combination is invalid.");
             }
 
-            var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
+            var result = await _signInManager.CheckPasswordSignInAsync(user, request?.Password!, lockoutOnFailure: true);
             if (!result.Succeeded)
             {
                 return ForbidWithError(Errors.InvalidGrant, "The username/password combination is invalid.");
@@ -118,7 +118,7 @@ namespace IdentityServer.Controllers
         /// </summary>
         private async Task<IActionResult> HandleClientCredentialsGrantType(OpenIddictRequest request)
         {
-            var application = await _applicationManager.FindByClientIdAsync(request.ClientId)
+            var application = await _applicationManager.FindByClientIdAsync(request?.ClientId!)
                              ?? throw new InvalidOperationException("The application cannot be found.");
 
             var identity = await CreateClaimsIdentityForApplication(application);
@@ -131,7 +131,7 @@ namespace IdentityServer.Controllers
         private async Task<IActionResult> HandleRefreshTokenGrantType()
         {
             var claimsPrincipal = (await HttpContext.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme)).Principal;
-            return SignIn(new ClaimsPrincipal(claimsPrincipal), OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+            return SignIn(new ClaimsPrincipal(claimsPrincipal!), OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
         }
 
         /// <summary>
@@ -188,11 +188,12 @@ namespace IdentityServer.Controllers
         /// </summary>
         private IActionResult ForbidWithError(string error, string errorDescription)
         {
-            var properties = new AuthenticationProperties(new Dictionary<string, string>
+            var authenticationDictionary = new Dictionary<string, string>
             {
                 [OpenIddictServerAspNetCoreConstants.Properties.Error] = error,
                 [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = errorDescription
-            });
+            };
+            var properties = new AuthenticationProperties(authenticationDictionary!);
 
             return Forbid(properties, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
         }
@@ -206,19 +207,19 @@ namespace IdentityServer.Controllers
             {
                 case Claims.Name:
                     yield return Destinations.AccessToken;
-                    if (claim.Subject.HasScope(Scopes.Profile))
+                    if (claim.Subject!.HasScope(Scopes.Profile))
                         yield return Destinations.IdentityToken;
                     break;
 
                 case Claims.Email:
                     yield return Destinations.AccessToken;
-                    if (claim.Subject.HasScope(Scopes.Email))
+                    if (claim.Subject!.HasScope(Scopes.Email))
                         yield return Destinations.IdentityToken;
                     break;
 
                 case Claims.Role:
                     yield return Destinations.AccessToken;
-                    if (claim.Subject.HasScope(Scopes.Roles))
+                    if (claim.Subject!.HasScope(Scopes.Roles))
                         yield return Destinations.IdentityToken;
                     break;
 
